@@ -1,2 +1,1 @@
 - ajouter une source de lumière
-- épaissir la ligne / anti aliasing
