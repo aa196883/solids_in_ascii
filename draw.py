@@ -235,8 +235,8 @@ def draw_faces(faces, view_vector, projected_vertices, stdscr, draw=True):
                 v1 = projected_vertices[face[i]]
                 v2 = projected_vertices[face[(i + 1) % len(face)]]
                 # draw_line_wu(stdscr, v1[0], v1[1], v2[0], v2[1], draw)
-                # draw_line_w_slope(stdscr, v1[0], v1[1], v2[0], v2[1], draw)
-                draw_line(stdscr, v1[0], v1[1], v2[0], v2[1], draw)
+                draw_line_w_slope(stdscr, v1[0], v1[1], v2[0], v2[1], draw)
+                # draw_line(stdscr, v1[0], v1[1], v2[0], v2[1], draw)
 
 def toggle_frame_storage():
     global stored_frame_chars

@@ -14,13 +14,25 @@ def group_by_characters(frame):
 
 # Sous-fonction pour calculer les correspondances entre deux listes de coordonnées
 def match_coordinates(current_coords, next_coords):
+    """
+    Calcule les correspondances entre deux listes de coordonnées.
+    Permet les correspondances multiples après le matching unitaire.
+
+    :param current_coords: Liste des coordonnées actuelles [(x, y), ...].
+    :param next_coords: Liste des coordonnées suivantes [(x, y), ...].
+    :return:
+        - matchings: Liste des correspondances [(i, j)], où i est un indice de current_coords
+                     et j un indice de next_coords (inclut 1-à-1, 1-à-N, et N-à-1).
+        - unmatched_current: Indices des éléments de current_coords non matchés.
+        - unmatched_next: Indices des éléments de next_coords non matchés.
+    """
     current_coords = np.array(current_coords)
     next_coords = np.array(next_coords)
 
     # Calculer les distances entre chaque paire de points
     distance_matrix = np.linalg.norm(current_coords[:, None] - next_coords, axis=2)
 
-    # Initialiser les correspondances
+    # Phase 1 : Matching unitaire (1-à-1)
     matchings = []
     used_next = np.zeros(len(next_coords), dtype=bool)
     used_current = np.zeros(len(current_coords), dtype=bool)
@@ -36,7 +48,31 @@ def match_coordinates(current_coords, next_coords):
             used_next[min_index] = True
             used_current[i] = True
 
-    return matchings, ~used_current, ~used_next
+    # Phase 2 : Matching multiple (1-à-N et N-à-1)
+    for i in range(len(current_coords)):
+        if not used_current[i]:  # Si un élément de current_frame n'a pas été matché
+            distances = distance_matrix[i]
+            # Trouver tous les points de next_frame les plus proches, non utilisés
+            for j in np.argsort(distances):
+                # if not used_next[j]:  # Ajouter une correspondance 1-à-N
+                matchings.append((i, j))
+                used_current[i] = True
+                break
+
+    for j in range(len(next_coords)):
+        if not used_next[j]:  # Si un élément de next_frame n'a pas été matché
+            distances = distance_matrix[:, j]
+            # Trouver tous les points de current_frame les plus proches, non utilisés
+            for i in np.argsort(distances):
+                # if not used_current[i]:  # Ajouter une correspondance N-à-1
+                matchings.append((i, j))
+                used_next[j] = True
+                break
+
+    unmatched_current = ~used_current
+    unmatched_next = ~used_next
+
+    return matchings, unmatched_current, unmatched_next
 
 # Fonction principale pour effectuer le matching
 def compute_matching(current_frame, next_frame):
